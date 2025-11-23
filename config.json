@@ -1,0 +1,30 @@
+{
+    "version": 1,
+    "server_port": 23849,
+    "default": {
+        "storage": {
+            "persistent_file_path": "storage_data"
+        },
+        "authentication": {
+            "enabled": true,
+            "save_api_key_to_file": false,
+            "api_key": null,
+            "api_key_hash": "pbkdf2$200000$7480914b06a325a99b0ed6543263efb3$f73b7e271c327a4fd2c4a808ca46b7045aa596add38d100fcfab14bb2b7b1312"
+        }
+    },
+    "projects": [
+        {
+            "id": "first_project",
+            "storage": {
+                "on_disk": true,
+                "cache_in_memory": true
+            },
+            "authentication": {
+                "enabled": true,
+                "save_api_key_to_file": false,
+                "api_key": null,
+                "api_key_hash": "pbkdf2$200000$c9edd72f7d0e2379484b0be2c7390b64$c480724c94c699c07f90148eee4fdccd371bbdf4c9ce44dbfd90c23dee3e132e"
+            }
+        }
+    ]
+}
