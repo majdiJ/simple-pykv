@@ -11,7 +11,6 @@ import hmac
 import base64
 from typing import Optional
 
-
 # Internal helper functions for base64 encoding
 def _b64_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
@@ -48,6 +47,10 @@ def verify_api_key(api_key: str, stored: str) -> bool:
         return hmac.compare_digest(dk, expected)
     except Exception:
         return False
+
+def compare_api_key(api_key1: str, api_key2: str) -> bool:
+    # Compare two unhashed API keys using hmac.compare_digest for timing-attack resistance.
+    return hmac.compare_digest(api_key1, api_key2)
 
 
 if __name__ == "__main__":

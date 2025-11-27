@@ -51,7 +51,7 @@ class config:
                         "api_key_hash": None
                     },
                     "security": {
-                        "key_values_discoverable": True
+                        "keys_and_values_discoverable": True
                     }
                 }
             ]
@@ -61,6 +61,16 @@ class config:
             json.dump(default_config, config_file, indent=4)
         print("Verbose: config.json has been created!")
 
-    # functions related to config authentication
-    class auth:
-        pass
+    # Make a new project entry in config and save to file
+    def add_project_to_config(self, project: dict) -> None:
+        config_data = self.read_config_file()
+        if config_data is None:
+            config_data = {
+                "version": 1,
+                "projects": []
+            }
+        if "projects" not in config_data:
+            config_data["projects"] = []
+        config_data["projects"].append(project)
+        self.write_config_file(config_data)
+        
