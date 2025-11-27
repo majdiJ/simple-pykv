@@ -10,15 +10,13 @@ from classes.database import Database
 from classes.server import Server
 
 # Global variables
-CONFIG_FILE = Path("config.json")
-DEFAULT_PORT = 23849
 
 if __name__ == "__main__":
     print("Simple PyKV - Version 0.0.0 (Beta) - Program starting...")
     cui.print.start_message()
 
     # initialize config class
-    config_instance = config(CONFIG_FILE)
+    config_instance = config()
     
     attempts = 0
     while attempts < 2:

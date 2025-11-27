@@ -7,18 +7,21 @@ import tempfile
 import os
 
 class Project:
-    def __init__(self, project_config):
-        self.config = project_config
-        self.store = {}
+    def __init__(self, config, project_id):
+        # Config will be a `config_instance` class. Use `config.get_config()` to get full config dict.
+        # Get project config from full config using `config.get_project_config(project_id)`
         self.lock = threading.RLock()  # lock for thread-safe operations
+        self.config = config
+        self.project_config = config.get_project_config(project_id)
+        self.store = {}
 
         base_dir = Path(self.config.get("storage", {}).get("persistent_file_path", "storage_data"))
         base_dir.mkdir(parents=True, exist_ok=True)
         self.filePath = base_dir / f"{self.config.get('id')}_store.json"
 
-    # Initialsation of project
-    def initialize(self):
-        pass
+        # Load existing data from file if on_disk is True
+        if self.config.get("storage", {}).get("on_disk", False):
+            self.loadFromFile()
 
     def loadFromFile(self):
         # Protect file read with lock
