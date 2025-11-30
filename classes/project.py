@@ -7,20 +7,20 @@ import tempfile
 import os
 
 class Project:
-    def __init__(self, config, project_id):
-        # Config will be a `config_instance` class. Use `config.get_config()` to get full config dict.
+    def __init__(self, config : object, project_id : str):
+        # Config will be a `config_instance` class. Use `config.get_config_data()` to get full config dict.
         # Get project config from full config using `config.get_project_config(project_id)`
         self.lock = threading.RLock()  # lock for thread-safe operations
-        self.config = config
+        self.config_data = config.get_config_data()
         self.project_config = config.get_project_config(project_id)
         self.store = {}
 
-        base_dir = Path(self.config.get("storage", {}).get("persistent_file_path", "storage_data"))
+        base_dir = Path(self.config_data.get("storage", {}).get("persistent_file_path", "storage_data"))
         base_dir.mkdir(parents=True, exist_ok=True)
-        self.filePath = base_dir / f"{self.config.get('id')}_store.json"
+        self.filePath = base_dir / f"{self.config_data.get('id')}_store.json"
 
         # Load existing data from file if on_disk is True
-        if self.config.get("storage", {}).get("on_disk", False):
+        if self.config_data.get("storage", {}).get("on_disk", False):
             self.loadFromFile()
 
     def loadFromFile(self):
@@ -70,7 +70,7 @@ class Project:
             self.store[key] = value
 
             # Save to disk if enabled in project config
-            if self.config.get("storage", {}).get("on_disk", False):
+            if self.config_data.get("storage", {}).get("on_disk", False):
                 self.saveToFile()
     
     def deleteValue(self, key):
@@ -79,24 +79,24 @@ class Project:
                 del self.store[key]
                 
                 # Save to disk if enabled in project config
-                if self.config.get("storage", {}).get("on_disk", False):
+                if self.config_data.get("storage", {}).get("on_disk", False):
                     self.saveToFile()
     
     def clearStore(self):
         with self.lock:
             self.store.clear()
-            if self.config.get("storage", {}).get("on_disk", False):
+            if self.config_data.get("storage", {}).get("on_disk", False):
                 self.saveToFile()
     
     def listKeys(self):
-        if self.config.get("security", {}).get("keys_and_values_discoverable", False):
+        if self.config_data.get("security", {}).get("keys_and_values_discoverable", False):
             with self.lock:
                 return list(self.store.keys())
         else:
             return None
     
     def listItems(self):
-        if self.config.get("security", {}).get("keys_and_values_discoverable", False):
+        if self.config_data.get("security", {}).get("keys_and_values_discoverable", False):
             with self.lock:
                 return {k: v for k, v in self.store.items()}
         else:

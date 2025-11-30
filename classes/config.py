@@ -71,6 +71,16 @@ class config:
                 logging.error("Configuration file could not be loaded and is required.")
                 raise RuntimeError("Configuration file is required but could not be loaded.")
     
+    # Merge with default project config
+    def merge_defaults(self, target, defaults):
+        for key, value in defaults.items():
+            if key not in target:
+                target[key] = value
+            else:
+                # Recurse into nested dicts
+                if isinstance(value, dict) and isinstance(target[key], dict):
+                    self.merge_defaults(target[key], value)
+    
     def loadFromFile(self) -> dict | None:
         # Protect file read with lock
         with self.lock:
@@ -117,25 +127,33 @@ class config:
         with self.lock:
             self.config_data = DEFAULT_CONFIG.copy()
             self.saveToFile()
-
+    
+    def get_config_data(self) -> dict:
+        with self.lock:
+            return self.config_data
+    
+    def update_system_config(self, new_system_config: dict) -> None:
+        # Update system config in config data and save to file. Only allow update fields: api_key, api_key_hash and project_discoverable
+        # Protect file write with lock
+        with self.lock:
+            system_config = self.config_data.get("system", {})
+            for key, value in new_system_config.items():
+                if key in ["authentication", "security"]:
+                    if key not in system_config:
+                        system_config[key] = {}
+                    for sub_key, sub_value in value.items():
+                        if sub_key in ["api_key", "api_key_hash", "project_discoverable"]:
+                            system_config[key][sub_key] = sub_value
+            self.config_data["system"] = system_config
+            self.saveToFile()
+        
     # Make a new project entry in config and save to file=
-    def add_new_project(self, project_data: dict) -> None:
-
+    def add_project(self, project_data: dict) -> None:
         # Must have an id
         if "id" not in project_data:
             raise ValueError("Project data must include an 'id' field.")
 
-        # Merge with default project config
-        def merge_defaults(target, defaults):
-            for key, value in defaults.items():
-                if key not in target:
-                    target[key] = value
-                else:
-                    # Recurse into nested dicts
-                    if isinstance(value, dict) and isinstance(target[key], dict):
-                        merge_defaults(target[key], value)
-
-        merge_defaults(project_data, DEFAULT_PROJECT_CONFIG)
+        self.merge_defaults(project_data, DEFAULT_PROJECT_CONFIG)
 
         # Protect file write with lock
         with self.lock:
@@ -144,3 +162,34 @@ class config:
 
             self.config_data["projects"].append(project_data)
             self.saveToFile()
+    
+    def get_project_config(self, project_id: str) -> dict | None:
+        with self.lock:
+            for project in self.config_data.get("projects", []):
+                if project.get("id") == project_id:
+                    return project
+        return None
+    
+    def update_project_config(self, project_id: str, new_project_data: dict) -> None:
+        # Update project config in config data and save to file. Project ID cannot be changed, evry other field can be updated.
+        with self.lock:
+            for i, project in enumerate(self.config_data.get("projects", [])):
+                if project.get("id") == project_id:
+                    # Update fields except for id
+                    for key, value in new_project_data.items():
+                        if key != "id":
+                            project[key] = value
+                    self.config_data["projects"][i] = project
+                    self.saveToFile()
+                    return
+            raise ValueError(f"Project with ID '{project_id}' not found in configuration.")
+
+    def delete_project_config(self, project_id: str) -> None:
+        # Delete project config from config data and save to file
+        with self.lock:
+            for i, project in enumerate(self.config_data.get("projects", [])):
+                if project.get("id") == project_id:
+                    del self.config_data["projects"][i]
+                    self.saveToFile()
+                    return
+            raise ValueError(f"Project with ID '{project_id}' not found in configuration.")
