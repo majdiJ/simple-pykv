@@ -77,8 +77,7 @@ base URL: `http://<server_address>:<server_port>/api/v1/`
 **Global Project Management (requires global API key):**
 - `GET /projects` - List all projects and configurations(excluding API keys & API hash, requires global API key)
 - `POST /projects` - Create a new project sending configuration data, return the created project details and API key (stores API key hash only, unless `save_api_key_to_file` is true, requires global API key)
-POST /projects/{project_id}/api-key/regeneratez
-- `POST /projects/{project_id}/api-key/regenerate` - Regenerate and return a new API key for the specified project (updates API key hash, requires global API key)
+- `POST /projects/{project_id}/config/regenerate-api-key` - Regenerate and return a new API key for the specified project (updates API key hash, requires global API key)
 - `DELETE /projects/{project_id}` - Delete a project and its data (requires global API key)
 
 **Project Management (requires project API key if authentication is enabled for that project):**
