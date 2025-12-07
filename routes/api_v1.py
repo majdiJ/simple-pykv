@@ -25,32 +25,49 @@ def extract_api_key(req=None):
 
 # Verify request API key against config authentication data (for system or project)
 def verify_authentication(config_data_authentication, req=None) -> bool:
-    req = req or request
-    
-    if not config_data_authentication:
-        raise ValueError("Error 505 Internal error: Configuration data / instance is missing")
-    
-    if not config_data_authentication.get('enabled', True):
-        return True  # No authentication required
-    else:
-        system_api_key = config_data_authentication.get('api_key')
-        system_api_key_hash = config_data_authentication.get('api_key_hash')
-        req_api_key = extract_api_key(req)
+    try:
+        req = req or request
+        
+        if not config_data_authentication:
+            logging.error("Configuration data / instance is missing")
+            status_code = 500
+            message = "Internal server error: View server logs for details."
+            return False, create_response(message=message, status_code=status_code)
 
-        # Use api_key if available, else use api_key_hash
-        if system_api_key: 
-            if req_api_key and compare_api_key(req_api_key, system_api_key):
-                return True
-            else:
-                return False
-        elif system_api_key_hash:
-            if req_api_key and verify_api_key(req_api_key, system_api_key_hash):
-                return True
-            else:
-                return False
+        if not config_data_authentication.get('enabled', True):
+            return True, None  # No authentication required
         else:
-            raise ValueError("Error 505 Internal error: Authentication is enabled but no API key or hash is configured")
+            system_api_key = config_data_authentication.get('api_key')
+            system_api_key_hash = config_data_authentication.get('api_key_hash')
+            req_api_key = extract_api_key(req)
+
+            # Construct failed API key response
+            status_code = 401
+            message = "Invalid or missing API key"
+
+            # Use api_key if available, else use api_key_hash
+            if system_api_key: 
+                if req_api_key and compare_api_key(req_api_key, system_api_key):
+                    return True, None
+                else:
+                    return False, create_response(message=message, status_code=status_code)
+            elif system_api_key_hash:
+                if req_api_key and verify_api_key(req_api_key, system_api_key_hash):
+                    return True, None
+                else:
+                    return False, create_response(message=message, status_code=status_code)
+            else:
+                logging.error("Authentication is enabled but no API key or hash is configured")
+                status_code = 500
+                message = "Internal server error: View server logs for details."
+                return False, create_response(message=message, status_code=status_code)
             
+    except ValueError as ve:
+        logging.error(f"Authentication error: {ve}")
+        status_code = 500
+        message = "Internal server error during authentication. View server logs for details."
+        return False, create_response(message=message, status_code=status_code)
+       
 # ROUTE>>> List all projects
 @api_v1_bp.route('/projects', methods=['GET'])
 def list_projects():
@@ -59,19 +76,11 @@ def list_projects():
     system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
     config_data = config_instance.get_config_data() if config_instance else None
-    system_authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
-
-    try:
-        if verify_authentication(system_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-        
-    except ValueError as ve:
-        logging.error(f"Project listing authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
+    
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
     
     try:
         discoverability = config_data.get('system', {}).get('security', {}).get('project_discoverable', False) if config_data else False
@@ -121,18 +130,11 @@ def create_project():
     system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
     config_data = config_instance.get_config_data() if config_instance else None
-    system_authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
+    authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
 
-    try:
-        if verify_authentication(system_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project listing authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         payload = request.get_json(silent=True)
@@ -195,19 +197,11 @@ def regenerate_project_api_key(project_id):
     system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
     config_data = config_instance.get_config_data() if config_instance else None
-    system_authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
+    authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
 
-    try:
-        if verify_authentication(system_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-        
-    except ValueError as ve:
-        logging.error(f"API key regeneration authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         project_instance = next(
@@ -251,18 +245,11 @@ def delete_project(project_id):
     system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
     config_data = config_instance.get_config_data() if config_instance else None
-    system_authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
+    authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
 
-    try:
-        if verify_authentication(system_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code, system_info=system_info_instance)
-    except ValueError as ve:
-        logging.error(f"Project deletion authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code, system_info=system_info_instance)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
     
     try:
         project_instance = next(
@@ -307,10 +294,10 @@ def get_project_details(project_id):
         return create_response(message=message, status_code=status_code, system_info=system_info_instance)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     try:
-        if verify_authentication(project_authentication_config, request) is False:
+        if verify_authentication(authentication_config, request) is False:
             status_code = 401
             message = "Invalid or missing API key"
             return create_response(message=message, status_code=status_code, system_info=system_info_instance)
@@ -359,18 +346,11 @@ def update_project_settings(project_id):
         return create_response(message=message, status_code=status_code)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project update authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         payload = request.get_json(silent=True)
@@ -417,18 +397,11 @@ def get_project_store(project_id):
         return create_response(message=message, status_code=status_code)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project store retrieval authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         discoverability = project_config.get('security', {}).get('keys_and_values_discoverable', False) if project_config else False
@@ -463,18 +436,11 @@ def put_project_store_key_value(project_id, key):
         return create_response(message=message, status_code=status_code, system_info=None)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code, system_info=None)
-    except ValueError as ve:
-        logging.error(f"Project store update authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code, system_info=None)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         payload = request.get_json(silent=True)
@@ -513,19 +479,11 @@ def get_project_store_key_value(project_id, key):
         return create_response(message=message, status_code=status_code, system_info=None)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code, system_info=None)
-        
-    except ValueError as ve:
-        logging.error(f"Project store key retrieval authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code, system_info=None)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         if key in project_instance.store:
@@ -557,23 +515,16 @@ def get_project_store_key_value_only(project_id, key):
         return create_response(message=message, status_code=status_code)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project store key value-only retrieval authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         if key in project_instance.store:
-            value = project_instance.getValueOnly(key)
-            return create_response(message="", status_code=200, data={"value": value})
+            # This route response will only include the value, will not use `create_response` method
+            return project_instance.getValueOnly(key)
         else:
             status_code = 404
             message = f"Key '{key}' not found in project '{project_id}' store"
@@ -599,18 +550,11 @@ def delete_project_store_key_value(project_id, key):
         return create_response(message=message, status_code=status_code)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project store key deletion authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         if key in project_instance.store:
@@ -643,18 +587,11 @@ def delete_project_store_all_key_values(project_id):
         return create_response(message=message, status_code=status_code)
 
     project_config = project_instance.get_project_config()
-    project_authentication_config = project_config.get('authentication', {}) if project_config else {}
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
 
-    try:
-        if verify_authentication(project_authentication_config, request) is False:
-            status_code = 401
-            message = "Invalid or missing API key"
-            return create_response(message=message, status_code=status_code)
-    except ValueError as ve:
-        logging.error(f"Project store deletion authentication error: {ve}")
-        status_code = 500
-        message = "Internal server error during authentication. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
 
     try:
         project_instance.clearStore()
