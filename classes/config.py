@@ -1,10 +1,13 @@
 # Imports
+import copy
 import json
 import threading
 from pathlib import Path
 import logging
 import tempfile
 import os
+
+from utils.auth_utils import generate_api_key, hash_api_key
 
 CONFIG_FILE_PATH = ("config.json")
 DEFAULT_PORT = 23849
@@ -23,6 +26,7 @@ DEFAULT_PROJECT_CONFIG = {
         "keys_and_values_discoverable": True
     }
 }
+
 DEFAULT_CONFIG = {
     "version": 1,
     "server_port": DEFAULT_PORT,
@@ -46,7 +50,7 @@ DEFAULT_CONFIG = {
     ]
 }
 
-class config:
+class Config:
     def __init__(self):
         self.lock = threading.RLock() 
         self.filePath = Path(CONFIG_FILE_PATH)
@@ -120,12 +124,12 @@ class config:
                 except Exception:
                     logging.exception("Failed to remove temporary file for configuration")
                 raise  # re-raise so caller can react (optional)
-    
-    # Make `config.json` file
+
     def make_default_file(self) -> None:
         # Protect file write with lock
         with self.lock:
-            self.config_data = DEFAULT_CONFIG.copy()
+            # deep copy to avoid sharing nested dict references
+            self.config_data = copy.deepcopy(DEFAULT_CONFIG)
             self.saveToFile()
     
     def get_config_data(self) -> dict:
@@ -133,35 +137,71 @@ class config:
             return self.config_data
     
     def update_system_config(self, new_system_config: dict) -> None:
-        # Update system config in config data and save to file. Only allow update fields: api_key, api_key_hash and project_discoverable
-        # Protect file write with lock
         with self.lock:
-            system_config = self.config_data.get("system", {})
+            system_config = self.config_data.setdefault("system", {})
+            # Ensure system defaults exist (so enabled/save_api_key_to_config aren't lost)
+            self.merge_defaults(system_config, DEFAULT_CONFIG.get("system", {}))
+
             for key, value in new_system_config.items():
                 if key in ["authentication", "security"]:
-                    if key not in system_config:
-                        system_config[key] = {}
-                    for sub_key, sub_value in value.items():
-                        if sub_key in ["api_key", "api_key_hash", "project_discoverable"]:
-                            system_config[key][sub_key] = sub_value
+                    target = system_config.setdefault(key, {})
+                    if isinstance(value, dict) and isinstance(target, dict):
+                        for sub_key, sub_value in value.items():
+                            if sub_key in ["api_key", "api_key_hash", "project_discoverable"]:
+                                target[sub_key] = sub_value
+
             self.config_data["system"] = system_config
             self.saveToFile()
+
         
     # Make a new project entry in config and save to file=
-    def add_project(self, project_data: dict) -> None:
+    def add_project(self, project_data: dict) -> str | None:
         # Must have an id
         if "id" not in project_data:
             raise ValueError("Project data must include an 'id' field.")
+        
+        # Ensure project_data dosen't have api_key or api_key_hash
+        if "authentication" in project_data:
+            project_data["authentication"].pop("api_key", None)
+            project_data["authentication"].pop("api_key_hash", None)
 
+        # Merge with default project config to ensure all keys exist
         self.merge_defaults(project_data, DEFAULT_PROJECT_CONFIG)
+
+        # Generate API key and hash if authentication is enabled and save_api_key_to_config is true
+        auth_config = project_data.get("authentication", {})
+        if auth_config.get("enabled", True):
+            api_key = generate_api_key()
+            api_key_hash = hash_api_key(api_key)
+
+            auth_config["api_key_hash"] = api_key_hash
+        
+            if auth_config.get("save_api_key_to_config", False):
+                auth_config["api_key"] = api_key
+            
+            project_data["authentication"] = auth_config
 
         # Protect file write with lock
         with self.lock:
+
+            # Ensure project ID is unique
+            existing_ids = {project.get("id") for project in self.config_data.get("projects", [])}
+            if project_data["id"] in existing_ids:
+                raise ValueError(f"Project with ID '{project_data['id']}' already exists in configuration.")
+
             if "projects" not in self.config_data:
                 self.config_data["projects"] = []
 
             self.config_data["projects"].append(project_data)
             self.saveToFile()
+        
+        if api_key:
+            return api_key
+        return None
+
+    def get_number_of_projects(self) -> int:
+        with self.lock:
+            return len(self.config_data.get("projects", []))
     
     def get_project_config(self, project_id: str) -> dict | None:
         with self.lock:
@@ -171,17 +211,49 @@ class config:
         return None
     
     def update_project_config(self, project_id: str, new_project_data: dict) -> None:
-        # Update project config in config data and save to file. Project ID cannot be changed, evry other field can be updated.
+        # Update project config in config data and save to file. Project ID cannot be changed.
         with self.lock:
             for i, project in enumerate(self.config_data.get("projects", [])):
                 if project.get("id") == project_id:
-                    # Update fields except for id
+                    # For each key, merge dicts where appropriate instead of overwriting them
                     for key, value in new_project_data.items():
-                        if key != "id":
+                        if key == "id":
+                            continue
+                        if isinstance(value, dict) and isinstance(project.get(key), dict):
+                            # update only provided subkeys, keep existing keys
+                            project[key].update(value)
+                        else:
+                            # replace non-dict or replace missing key
                             project[key] = value
                     self.config_data["projects"][i] = project
                     self.saveToFile()
                     return
+            raise ValueError(f"Project with ID '{project_id}' not found in configuration.")
+    
+    def regenerate_project_api_key(self, project_id: str) -> str | None:
+        # Regenerate API key for the specified project, update hash in config, and save to file
+        with self.lock:
+            for i, project in enumerate(self.config_data.get("projects", [])):
+                if project.get("id") == project_id:
+                    auth_config = project.get("authentication", {})
+                    if not auth_config.get("enabled", True):
+                        return None  # Authentication not enabled, nothing to do
+
+                    # Generate new API key and hash
+                    new_api_key = generate_api_key()
+                    new_api_key_hash = hash_api_key(new_api_key)
+
+                    auth_config["api_key_hash"] = new_api_key_hash
+
+                    if auth_config.get("save_api_key_to_config", False):
+                        auth_config["api_key"] = new_api_key
+                    else:
+                        auth_config.pop("api_key", None)  # Remove api_key if it exists
+
+                    project["authentication"] = auth_config
+                    self.config_data["projects"][i] = project
+                    self.saveToFile()
+                    return new_api_key
             raise ValueError(f"Project with ID '{project_id}' not found in configuration.")
 
     def delete_project_config(self, project_id: str) -> None:
