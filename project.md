@@ -75,6 +75,12 @@ base URL: `http://<server_address>:<server_port>/api/v1/`
 
 ### Endpoints
 
+### General
+- `GET /status`  
+  - Check server status.  
+  - Response: `200` with `{"status":"running"}`.  
+  - Errors: `500` if server has issues.
+
 #### Global Project Management (requires **system/global** API key)
 - `GET /projects`  
   - List all projects and their configurations (API keys & API key hashes are scrubbed).  
@@ -130,9 +136,15 @@ base URL: `http://<server_address>:<server_port>/api/v1/`
   - Errors: `400` if missing body (neither JSON nor non-empty plain text), `401` for auth, `404` if project not found, `500` for internal errors.
 
 - `GET /projects/<project_id>/store/<key>`  
-  - Retrieve the value for a specific key in the project store.  
+  - Retrieve the value and metadata for a specific key in the project store.
   - Auth: verifies against the project's `authentication` config.  
   - Response: `200` with the stored value (JSON).  
+  - Errors: `401` for auth, `404` if project or key not found, `500` for internal errors.
+
+- `GET /projects/<project_id>/store/<key>/value`  
+  - Retrieve only the raw value for a specific key in the project store (no metadata).
+  - Auth: verifies against the project's `authentication` config.  
+  - Response: `200` with the raw stored value (plain text or JSON as originally stored).  
   - Errors: `401` for auth, `404` if project or key not found, `500` for internal errors.
 
 - `DELETE /projects/<project_id>/store/<key>`  
