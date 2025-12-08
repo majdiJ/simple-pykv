@@ -277,7 +277,8 @@ def delete_project(project_id):
         message = "Internal server error during project deletion. View server logs for details."
         return create_response(message=message, status_code=status_code, system_info=system_info_instance)
 
-# ROUTE>>> Get project details (excluding API key & API hash, requires project API key if authentication is enabled)
+# Project Management (requires project API key when that project's authentication is enabled)
+# ROUTE>>> Get project details
 @api_v1_bp.route('/projects/<string:project_id>', methods=['GET'])
 def get_project_details(project_id):
     config_instance : Config = current_app.extensions.get('config_instance')
