@@ -12,7 +12,7 @@ from utils.metadata import get_current_epoch_time, size_bytes
 class Project:
     def __init__(self, config: Config, project_id: str):
         self.lock = threading.RLock()  # lock for thread-safe operations
-        self.config_data = config.get_config_data()
+        self.config_data = config.config_data
         self.project_config = config.get_project_config(project_id)
         self.store = {}
         self.id = project_id
@@ -30,9 +30,9 @@ class Project:
             self.filePath = base_dir / f"{project_id}_store.json"
 
             # Load existing data from file as on_disk is True
-            self.loadFromFile()
+            self.__loadFromFile()
 
-    def loadFromFile(self):
+    def __loadFromFile(self):
         with self.lock:
             try:
                 if not self.filePath.exists():
@@ -55,7 +55,7 @@ class Project:
                 logging.exception("Unexpected error while loading project store")
                 self.store = {}
 
-    def saveToFile(self):
+    def __saveToFile(self):
         if not self._on_disk_boolean:
             return  # Do not save if on_disk is False
         
@@ -115,18 +115,18 @@ class Project:
             self.store[key]["size_bytes"] = size_bytes(value)
             self.store[key]["value"] = value
 
-            self.saveToFile()
+            self.__saveToFile()
 
     def deleteKey(self, key):
         with self.lock:
             if key in self.store:
                 del self.store[key]
-                self.saveToFile() # Save to disk if on_disk is True
+                self.__saveToFile() # Save to disk if on_disk is True
 
     def clearStore(self):
         with self.lock:
             self.store.clear()
-            self.saveToFile() # Save to disk if on_disk is True
+            self.__saveToFile() # Save to disk if on_disk is True
 
     def listKeys(self):
         if self.project_config.get("security", {}).get("keys_and_values_discoverable", False):

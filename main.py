@@ -23,11 +23,11 @@ if __name__ == "__main__":
         exit(1)
 
     # Check to see if system authentication is enabled
-    if config_instance.get_config_data().get("system", {}).get("authentication", {}).get("enabled", True):
+    if config_instance.config_data.get("system", {}).get("authentication", {}).get("enabled", True):
         print("Verbose: System authentication is enabled.")
 
         # Check to see if API key or hash exist in config for system authentication
-        if config_instance.get_config_data().get("system", {}).get("authentication", {}).get("api_key") or config_instance.get_config_data().get("system", {}).get("authentication", {}).get("api_key_hash"):
+        if config_instance.config_data.get("system", {}).get("authentication", {}).get("api_key") or config_instance.config_data.get("system", {}).get("authentication", {}).get("api_key_hash"):
             # API key or hash found
             print("Verbose: System authentication API key and/or hash found in configuration.")
         else:
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             new_api_key_hash = hash_api_key(new_api_key)
 
             # Check to see if we should save the new API key to the config file (Hash is always saved)
-            if config_instance.get_config_data().get("system", {}).get("authentication", {}).get("save_api_key_to_config", False):
+            if config_instance.config_data.get("system", {}).get("authentication", {}).get("save_api_key_to_config", False):
                 print("Verbose: Saving new API key to configuration file as per settings")
                 new_system_config = {
                     "authentication": {
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         print("Verbose: System authentication is disabled.")
     
     # Loop through each project and check authentication
-    for project in config_instance.get_config_data().get("projects", []):
+    for project in config_instance.config_data.get("projects", []):
         project_id = project.get("id", "unknown_project")
         if project.get("authentication", {}).get("enabled", True):
             print(f"Verbose: Project '{project_id}' authentication is enabled.")
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     project_instances = []
 
     # Loop through each project in config and instantiate Project class
-    for project_cfg in config_instance.get_config_data().get("projects", []):
+    for project_cfg in config_instance.config_data.get("projects", []):
         print(f"Verbose: Initialising project '{project_cfg.get('id', 'unknown_project')}'...")
         try:
             project_instance = Project(config_instance, project_cfg.get("id", "unknown_project"))
@@ -121,8 +121,8 @@ if __name__ == "__main__":
     # All setup complete - start the server
     print("Verbose: Program setup complete. Proceeding to start server...")
     server_app_instance = Server.create_app(config_instance = config_instance, project_instances = project_instances, system_info_instance = system_info_instance)
-    server_port = config_instance.get_config_data().get("server_port")
-    server_host = config_instance.get_config_data().get("server_host")
+    server_port = config_instance.config_data.get("server_port")
+    server_host = config_instance.config_data.get("server_host")
     print(f"Verbose: Starting server on {server_host}:{server_port}...")
     # Run the server
     server_app_instance.run(host=server_host, port=server_port, threaded=True, debug=True, use_reloader=False)

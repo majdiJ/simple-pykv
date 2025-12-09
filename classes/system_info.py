@@ -129,8 +129,8 @@ class system_info:
             "version": self.simple_pykv_version,
             "uptime": int(time.time() - self.start_time),
             "memory_usage_bytes": get_process_memory_bytes(),
-            "storage_usage_bytes": get_folder_size_bytes(self.config_instance.get_config_data().get("system", {}).get("storage", {}).get("persistent_file_path", "storage_data")),
-            "number_of_projects": self.config_instance.get_number_of_projects()
+            "storage_usage_bytes": get_folder_size_bytes(self.config_instance.config_data.get("system", {}).get("storage", {}).get("persistent_file_path", "storage_data")),
+            "number_of_projects": self.config_instance.number_of_projects
         }
         return updated_info
 

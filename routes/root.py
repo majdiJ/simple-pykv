@@ -15,7 +15,7 @@ def server_status():
     project_instances: List[Project] = current_app.extensions.get('project_instances')
     system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
-    config_data = config_instance.get_config_data() if config_instance else None
+    config_data = config_instance.config_data if config_instance else None
     authentication_config = config_data.get('system', {}).get('authentication', {}) if config_data else {}
 
     # Require authentication for full system info
