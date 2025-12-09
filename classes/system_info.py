@@ -124,7 +124,9 @@ class system_info:
         self.start_time = time.time()
         self.config_instance = config_instance
     
-    def get_system_info(self):
+    # Getter for system info
+    @property
+    def system_info(self):
         updated_info = {
             "version": self.simple_pykv_version,
             "uptime": int(time.time() - self.start_time),
