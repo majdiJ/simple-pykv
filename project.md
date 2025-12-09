@@ -14,46 +14,60 @@ The goal of Simple PyKV is to provide an easy-to-setup and maintain solution for
 - Must use API keys or tokens for basic authentication and access control of overall system and per project. 
 - config.json file to manage server settings such as port number, persistence options (global or per project), and authentication settings.
 
-## Questions to address
-- How will data persistence be handled? Will it use flat files, SQLite, or another method?
-- How will per-project configuration be managed?:
-    - How will projects be created and deleted? - via API or config file, or both?
-    - How will project-specific settings (like persistence options) be defined and stored? - in config file or via API?
-- What authentication mechanism will be implemented to secure access to the API? And for per-project access control?
-- How will error handling and logging be implemented to ensure reliability and ease of debugging?
-
 ## Configuration File Design
 I'm thinkng that maybe the user firrst runs the python program, it will create a default config.json file with settings such as:
 ```json
 {
-    "version": 1,
-    "server_port": 23849,
-    "default": {
-        "storage": {
-            "persistent_file_path": "storage_data/"
-        },
-        "authentication": {
-            "enabled": true,
-            "save_api_key_to_file": false,
-            "api_key": null,
-            "api_key_hash": "[Will be generated and stored here if api_key is null during first run]"
-        },
+  "version": 1,
+  "server_port": 23849,
+  "server_host": "0.0.0.0",
+  "system": {
+    "storage": {
+      "persistent_file_path": "storage_data"
     },
-    "projects": [
-        {
-            "id": "first_project",
-            "storage": {
-                "on_disk": true,
-                "cache_in_memory": true
-            },
-            "authentication": {
-                "enabled": true,
-                "save_api_key_to_file": false,
-                "api_key": null,
-                "api_key_hash": "[Will be generated and stored here if api_key is null during first run]"
-            }
-        }
-    ]
+    "authentication": {
+      "enabled": true,
+      "save_api_key_to_config": true,
+      "api_key": "UlFjO27ZBHiZoeeTdBBPsRqz0rnYUeltW3PtC_QOtFE",
+      "api_key_hash": "pbkdf2_sha256$200000$0qAVJ8kOh22lhJOA2PGpGA$ldIsEwBQOFLRt_uRElpUX_1tjXARvDN72sbP7hKHcag"
+    },
+    "security": {
+      "project_discoverable": true
+    }
+  },
+  "projects": [
+    {
+      "id": "first_project",
+      "storage": {
+        "on_disk": true
+      },
+      "authentication": {
+        "enabled": true,
+        "save_api_key_to_config": true,
+        "api_key": "1EmoHoumfnJ62-OaYCPxmpoHEv4t9fjWOlJURnZu-Kw",
+        "api_key_hash": "pbkdf2_sha256$200000$CqDlbUPkgvU-Y6u36_oVBQ$-0Pxe7veNGVVq8x1x8DQGZ3q-ZDVZd7X_np10s3o70E"
+      },
+      "security": {
+        "keys_and_values_discoverable": true
+      },
+      "api_key": "test"
+    },
+    {
+      "id": "New_project",
+      "storage": {
+        "on_disk": true
+      },
+      "authentication": {
+        "enabled": true,
+        "save_api_key_to_config": false,
+        "api_key": null,
+        "api_key_hash": "pbkdf2_sha256$200000$pauMj67nMuCqoKeQcq9m_Q$hUV9R03EvZv_AHNgi-Tq6ZKsFvecinp7aFCB93M-R4A"
+      },
+      "security": {
+        "keys_and_values_discoverable": true
+      }
+    }
+  ]
 }
 ```
 
