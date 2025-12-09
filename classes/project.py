@@ -128,9 +128,9 @@ class Project:
             self.store.clear()
             self.__saveToFile() # Save to disk if on_disk is True
 
-    # Getters for listing keys and items based on discoverability setting
+    # Getters for listing all keys if discoverable
     @property
-    def Keys(self):
+    def keys(self):
         if self._project_config.get("security", {}).get("keys_and_values_discoverable", False):
             with self.lock:
                 return list(self.store.keys())

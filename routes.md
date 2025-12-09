@@ -390,6 +390,13 @@ curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project \
 
 ---
 
+## GET /api/v1/projects/<project_id>/store/keys
+
+* **Name / short description / use**: List all keys in a project's store.
+* **Requirements**:
+
+---
+
 ## GET /api/v1/projects/<project_id>/store
 
 * **Name / short description / use**: List all key/value pairs and metadata for a project.

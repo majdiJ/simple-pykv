@@ -382,11 +382,11 @@ def update_project_settings(project_id):
         message = "Internal server error during project update. View server logs for details."
         return create_response(message=message, status_code=status_code)
 
-# ROUTE>>> Retrieve all keys and values for the project (requires project API key if authentication is enabled)
-@api_v1_bp.route('/projects/<string:project_id>/store', methods=['GET'])
-def get_project_store(project_id):
-    config_instance : Config = current_app.extensions.get('config_instance')
+# ROUTE>>> Retive all keys for the project (requires project API key if authentication is enabled)
+@api_v1_bp.route('/projects/<string:project_id>/store/keys', methods=['GET'])
+def get_project_store_keys(project_id):
     project_instances : List[Project]  = current_app.extensions.get('project_instances')
+    system_info_instance : system_info = current_app.extensions.get('system_info_instance')
 
     project_instance = next(
         (project for project in project_instances or [] if getattr(project, "id", None) == project_id), None
@@ -407,18 +407,60 @@ def get_project_store(project_id):
     try:
         discoverability = project_config.get('security', {}).get('keys_and_values_discoverable', False) if project_config else False
         if discoverability:
+            status_code = 200
+            message = f"Project '{project_id}' store keys fetched successfully"
+            value = list(project_instance.keys)
+            return create_response(message=message, status_code=status_code, data=value, system_info=system_info_instance)
+        else:
+            status_code = 403
+            message = "Retrieving all keys is disabled for this project"
+            return create_response(message=message, status_code=status_code, system_info=system_info_instance) 
+
+    except Exception as e:
+        logging.exception("Unexpected error during fetching project store keys")
+        status_code = 500
+        message = "Internal server error during fetching project store keys. View server logs for details."
+        return create_response(message=message, status_code=status_code, system_info=system_info_instance)
+
+# ROUTE>>> Retrieve all keys and values for the project (requires project API key if authentication is enabled)
+@api_v1_bp.route('/projects/<string:project_id>/store', methods=['GET'])
+def get_project_store(project_id):
+    project_instances : List[Project]  = current_app.extensions.get('project_instances')
+    system_info_instance : system_info = current_app.extensions.get('system_info_instance')
+
+    project_instance = next(
+        (project for project in project_instances or [] if getattr(project, "id", None) == project_id), None
+    )
+
+    if not project_instance:
+        status_code = 404
+        message = f"Project with id '{project_id}' not found"
+        return create_response(message=message, status_code=status_code)
+
+    project_config = project_instance.project_config
+    authentication_config = project_config.get('authentication', {}) if project_config else {}
+
+    verified, auth_response = verify_authentication(authentication_config, request)
+    if not verified:
+        return auth_response
+
+    try:
+        discoverability = project_config.get('security', {}).get('keys_and_values_discoverable', False) if project_config else False
+        if discoverability:
+            status_code = 200
+            message = f"Project '{project_id}' store fetched successfully"
             value = project_instance.KeyValueItems
-            return create_response(message="", status_code=200, data=value)
+            return create_response(message=message, status_code=status_code, data=value, system_info=system_info_instance)
         else:
             status_code = 403
             message = "Retrieving all keys and values is disabled for this project"
-            return create_response(message=message, status_code=status_code)        
+            return create_response(message=message, status_code=status_code, system_info=system_info_instance)        
 
     except Exception as e:
         logging.exception("Unexpected error during fetching project store")
         status_code = 500
         message = "Internal server error during fetching project store. View server logs for details."
-        return create_response(message=message, status_code=status_code)
+        return create_response(message=message, status_code=status_code, system_info=system_info_instance)
 
 # ROUTE>>> Create or update a key-value pair for the project (requires project API key if authentication is enabled)
 @api_v1_bp.route('/projects/<string:project_id>/store/<string:key>', methods=['PUT'])
