@@ -91,7 +91,7 @@ def list_projects():
 
         projects = {}
         for project in project_instances or []:
-            config = project.get_project_config() or {}
+            config = project.project_config or {}
             project_id = (
                 config.get("id")
                 or getattr(project, "id", None)
@@ -294,7 +294,7 @@ def get_project_details(project_id):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code, system_info=system_info_instance)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     try:
@@ -346,7 +346,7 @@ def update_project_settings(project_id):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -397,7 +397,7 @@ def get_project_store(project_id):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -407,7 +407,7 @@ def get_project_store(project_id):
     try:
         discoverability = project_config.get('security', {}).get('keys_and_values_discoverable', False) if project_config else False
         if discoverability:
-            value = project_instance.listItems()
+            value = project_instance.KeyValueItems
             return create_response(message="", status_code=200, data=value)
         else:
             status_code = 403
@@ -436,7 +436,7 @@ def put_project_store_key_value(project_id, key):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code, system_info=None)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -479,7 +479,7 @@ def get_project_store_key_value(project_id, key):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code, system_info=None)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -515,7 +515,7 @@ def get_project_store_key_value_only(project_id, key):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -550,7 +550,7 @@ def delete_project_store_key_value(project_id, key):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)
@@ -587,7 +587,7 @@ def delete_project_store_all_key_values(project_id):
         message = f"Project with id '{project_id}' not found"
         return create_response(message=message, status_code=status_code)
 
-    project_config = project_instance.get_project_config()
+    project_config = project_instance.project_config
     authentication_config = project_config.get('authentication', {}) if project_config else {}
 
     verified, auth_response = verify_authentication(authentication_config, request)

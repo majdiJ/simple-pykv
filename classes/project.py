@@ -13,15 +13,15 @@ class Project:
     def __init__(self, config: Config, project_id: str):
         self.lock = threading.RLock()  # lock for thread-safe operations
         self.config_data = config.config_data
-        self.project_config = config.get_project_config(project_id)
+        self._project_config = config.get_project_config(project_id)
         self.store = {}
         self.id = project_id
 
-        if self.project_config is None:
+        if self._project_config is None:
             raise ValueError(f"Project config for id '{project_id}' not found.")
 
         # Determine if on_disk storage is enabled for this project, default to False for security
-        self._on_disk_boolean = bool(self.project_config.get("storage", {}).get("on_disk", False))
+        self._on_disk_boolean = bool(self._project_config.get("storage", {}).get("on_disk", False))
 
         # Set up file path for persistent storage if on_disk is True
         if self._on_disk_boolean:
@@ -128,24 +128,30 @@ class Project:
             self.store.clear()
             self.__saveToFile() # Save to disk if on_disk is True
 
-    def listKeys(self):
-        if self.project_config.get("security", {}).get("keys_and_values_discoverable", False):
+    # Getters for listing keys and items based on discoverability setting
+    @property
+    def Keys(self):
+        if self._project_config.get("security", {}).get("keys_and_values_discoverable", False):
             with self.lock:
                 return list(self.store.keys())
         else:
             return None
 
-    def listItems(self):
-        if self.project_config.get("security", {}).get("keys_and_values_discoverable", False):
+    # Getter for listing KV items
+    @property
+    def KeyValueItems(self):
+        if self._project_config.get("security", {}).get("keys_and_values_discoverable", False):
             with self.lock:
                 # return shallow copy to avoid caller mutating internal dict
                 return copy.deepcopy(self.store)
         else:
             return None
-        
-    def get_project_config(self) -> dict:
+    
+    # Getter for project configuration
+    @property
+    def project_config(self) -> dict:
          with self.lock:
-             return self.project_config
+             return self._project_config
     
     def delete_store_file(self):
         # Deletes the on-disk store file if it exists.
