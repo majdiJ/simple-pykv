@@ -43,6 +43,9 @@ DEFAULT_CONFIG = {
         },
         "security": {
             "project_discoverable": True
+        },
+        "debuging": {
+            "verbose_mode": False
         }
     },
     "projects": [
