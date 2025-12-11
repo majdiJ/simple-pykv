@@ -31,13 +31,15 @@ Designed for simplicity and predictable behaviour, perfect for small-to-medium p
 
 1. [Quickstart](#quickstart)
 2. [Configuration](#configuration)
-3. [Running](#running)
-4. [API overview](#api-overview)
-5. [Examples](#examples)
-6. [Client tips](#client-tips)
-7. [Troubleshooting](#troubleshooting)
-8. [Contributing](#contributing)
-9. [License](#license)
+3. [Running the server](#running-the-server)
+4. [Terminal logging / CUI](#terminal-logging--cui)
+5. [Ensuring security](#ensuring-security)
+6. [API overview](#api-overview)
+7. [Examples](#examples)
+8. [Client tips](#client-tips)
+9. [Troubleshooting](#troubleshooting)
+10. [Contributing](#contributing)
+11. [License](#license)
 
 ## Additional documentation
 1. [Routes](routes.md) - Detailed API reference
@@ -84,6 +86,8 @@ The server will start using the default configuration.
 On first server run, if `config.json` is missing, a default config file will be created in the current directory (`simple-pykv`) along with a storage folder for on-disk projects.
 
 If authentication is enabled, API keys will be generated and shown in the console. If `save_api_key_to_config` is `true`, the plaintext API keys will also be saved in `config.json`. Otherwise, they will only be shown in the console once,  **store them safely!** (Read the [Configuration](#configuration) section for details and information about API key management.)
+
+> **Important:** Running the server without proper configuration, security settings, and API key management will expose your server to potential security risks. Please read the [Configuration](#configuration), [Running the server](#running-the-server) and [Ensuring security](#ensuring-security) sections carefully before deploying the server publicly.
 
 ---
 
@@ -178,21 +182,57 @@ Important config notes:
 
 ---
 
-## Running
+## Running the server
 
-1. Run the server with
+1. Run the server
+  
+    You can run the server using a WSGI server like Gunicorn or Waitress for production use (See the [Quickstart](#quickstart) section for detailed instructions). You can also run in development mode using Flask's built-in server, but this is **NOT recommended for production** due to security and performance reasons.
+
+    a. using Waitress (cross-platform):
+    ```bash
+    waitress-serve --listen=127.0.0.1:23849 main:app
+    ```
+
+    or in devlelopment mode (NOT recommended for production):
+
+    b. using Flask's built-in server:
     ```bash
     python main.py
     ```
-    within the `simple-pykv` directory.
-
-2. The server will start and use the configuration in `config.json` (if it exists) or create a default config if missing.
+  
+2. The server will start and use the configuration in config.json (if it exists) or create a default config if missing
 
 3. The server listens on the configured host and port (default `127.0.0.1:23849`).
 
-4. You can interact with the API using HTTP clients like `curl`, Postman, or custom scripts.
+4. You can interact with the API using HTTP clients like curl, Postman, or custom scripts.
 
 You can stop the server with `CTRL+C` in the terminal.
+
+---
+
+## Terminal logging / CUI
+The server includes a simple Console User Interface (CUI) for logging important events and messages to the terminal.
+
+Common tyoes if logging messages:
+1. **INFO** - General informational messages about server status and operations.
+2. **ERROR** - Error messages indicating problems or failures.
+3. **SUCCESS** - Messages indicating successful operations.
+4. **VERBOSE** - Detailed debug messages (shown only if verbose mode is enabled in config).
+5. **WARNING** - Warning messages indicating potential issues.
+
+---
+
+## Ensuring security
+
+Running the server as is and without additional security measures for public deployment is **NOT recommended**. Here are some tips to enhance security:
+
+1. **Enable authentication** - Ensure `system.authentication.enabled` and `projects[].authentication.enabled` are set to `true` in `config.json` to require API keys for access (By default, authentication is enabled but double-check).
+2. **Use strong API keys** - Let the server generate secure random API keys on first run. Avoid setting weak or guessable API keys manually.
+3. **Restrict network access** - Use firewalls or reverse proxies to restrict access to trusted clients only.
+4. **Use HTTPS** - Deploy behind a reverse proxy (e.g., Nginx) with SSL/TLS to encrypt traffic.
+5. **Regularly rotate API keys** - Regenerate API keys periodically and update clients accordingly.
+6. **Monitor logs** - Regularly check server logs for suspicious activity.
+7. **Keep software updated** - Regularly update Python and dependencies to patch security vulnerabilities.
 
 ---
 
