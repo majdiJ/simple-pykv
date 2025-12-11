@@ -1,0 +1,14 @@
+# .dockerignore
+__pycache__/
+*.py[cod]
+*.egg-info
+.env
+.venv/
+venv/
+env/
+.envrc
+.DS_Store
+.vscode/
+storage_data/
+config.json
+.git

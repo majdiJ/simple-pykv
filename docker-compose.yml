@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  simple-pykv:
+    build: .
+    image: simple-pykv:latest
+    restart: unless-stopped
+    ports:
+      - "23849:23849"
+    # Persist everything the app writes (config.json and storage_data) in ./pykv_data on the host
+    volumes:
+      - ./pykv_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -20,6 +20,7 @@ venv.bak/
 
 # Project-specific generated data (For security and privacy)
 storage_data/
+pykv_data/
 
 # Project-specific config (May contain secrets)
 config.json
