@@ -1,25 +1,360 @@
-# macOS system files
+#OS specific
+
+# macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Python build / cache / extension files
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+
+# Python specific 
+
+# Byte-compiled / optimized / DLL files
 *.py[cod]
+*$py.class
 __pycache__/
+*.so
 
-# Virtual environments (ignore any common name)
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
 .env
-.venv/
+.env.*
+.env.local
+.env.*.local
+!.env.example
+.venv
 venv/
 env/
+ENV/
 env.bak/
 venv.bak/
 
-# Editor/IDE settings
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+
+# IDEs and Editors
+
+# VS Code
 .vscode/
+.vscode-server/
+*.code-workspace
 
-# Project-specific generated data (For security and privacy)
-storage_data/
+# JetBrains 
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
 
-# Project-specific config (May contain secrets)
+# Sublime 
+*.sublime-workspace
+*.sublime-project
+.sublimets
+
+# Vim
+*.swp
+*.swo
+*.swn
+*.swm
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+
+# Emacs (ancient IDE)
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+
+# Project-Specific
+
+# Configuration files (May contain secrets)
 config.json
+config.*.json
+!config.example.json
+
+# Storage and data directories (For security and privacy)
+storage_data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files from atomic writes
+*.tmp.*
+*.json.tmp.*
+
+
+# More Secrets & Security
+
+# Keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.pub
+id_rsa
+id_dsa
+*.ppk
+
+# Environment files
+.envrc
+.env.production
+.env.development
+.env.test
+.env.staging
+
+# Secrets
+secrets/
+secret.*
+*.secret
+credentials/
+*.credentials
+
+
+# Logs & Debug
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Debug files
+*.dmp
+*.stackdump
+
+
+# Docker
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+*.env.docker
+.docker/
+
+# Dev Container
+.devcontainer/.env
+.devcontainer/*.env
+.devcontainer/*.local
+
+
+# Temporary & Cache
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.patch
+~*
+
+# Cache directories
+cache/
+.cache/
+*.cache
+
+# Tools
+*.lock
+*.pid
+
+
+# Archives & Backups
+
+# Backup files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.gz
+*.bz2
+*.xz
+
+
+# Rand
+
+# Metadata
+*.metadata
+.tags
+.tags_sorted_by_file
+tags
+TAGS
+
+# pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Profiling
+*.prof
+*.lprof
