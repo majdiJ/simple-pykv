@@ -6,6 +6,11 @@ class cui:
 
     def __init__(self, config_data_instance : Config):
         self._verbose_mode = config_data_instance.config_data.get("system", {}).get("debuging", {}).get("verbose_mode", False)
+        self.RED = "\x1b[31m"
+        self.GREEN = "\x1b[32m"
+        self.YELLOW = "\x1b[33m"
+        self.BLUE = "\x1b[34m"
+        self.RESET = "\x1b[0m"
     
     def print(self, message: str, type: str = "info"):
 
@@ -14,11 +19,11 @@ class cui:
         if type == "info" or type == "INFO":
             print(f"{current_time} [INFO]: {message}")
         elif type == "error" or type == "ERROR":
-            print(f"{current_time} [ERROR]: {message}")
+            print(f"{self.RED}{current_time} [ERROR]: {message}{self.RESET}")
         elif type == "success" or type == "SUCCESS":
-            print(f"{current_time} [SUCCESS]: {message}")
+            print(f"{self.GREEN}{current_time} [SUCCESS]: {message}{self.RESET}")
         elif type == "verbose" or type == "VERBOSE":
             if self._verbose_mode:
-                print(f"{current_time} [VERBOSE]: {message}")
+                print(f"{self.BLUE}{current_time} [VERBOSE]: {message}{self.RESET}")
         elif type == "warning" or type == "WARNING":
-            print(f"{current_time} [WARNING]: {message}")
+            print(f"{self.YELLOW}{current_time} [WARNING]: {message}{self.RESET}")

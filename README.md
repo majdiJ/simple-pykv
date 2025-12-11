@@ -61,15 +61,23 @@ Requirements: Python 3.8+.
 
 3. **Install dependencies**
     ```bash
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
     ```
     (*Optional:* create and activate a virtual environment before installing dependencies to avoid conflicts with other Python packages.)
 
 4. **Run the server**
     Within the `simple-pykv` directory, run:
+
+    For windows, MacOs, or Linux:
     ```bash
-    python main.py
+    waitress-serve --listen=127.0.0.1:23849 main:app
     ```
+
+    or, for Linux/MacOS with Gunicorn:
+    ```bash
+    gunicorn -w 4 -b 127.0.0.1:23849 main:app
+    ```
+    *Gunicorn provides better performance and is recommended for production use if using Linux or MacOS. However, if running the server for small projects, performance gains may be minimal.*
 
 The server will start using the default configuration.
 
@@ -87,7 +95,7 @@ The server is configured by a single JSON file (`config.json`). Below is a **san
 {
   "version": 1,
   "server_port": 23849,
-  "server_host": "0.0.0.0",
+  "server_host": "127.0.0.1",
   "system": {
     "storage": {
       "persistent_file_path": "storage_data"
@@ -132,7 +140,7 @@ Here are the main configuration options:
 
 * `server_port` - Port number to bind the HTTP server to (default `23849`).
 
-* `server_host` - Host/IP to bind the HTTP server to (default `0.0.0.0`).
+* `server_host` - Host/IP to bind the HTTP server to (default `127.0.0.1`).
 
 * `system.storage.persistent_file_path` - Directory path for on-disk project storage files. Recommended to keep as `storage_data`.
 
@@ -180,7 +188,7 @@ Important config notes:
 
 2. The server will start and use the configuration in `config.json` (if it exists) or create a default config if missing.
 
-3. The server listens on the configured host and port (default `0.0.0.0:23849`).
+3. The server listens on the configured host and port (default `127.0.0.1:23849`).
 
 4. You can interact with the API using HTTP clients like `curl`, Postman, or custom scripts.
 

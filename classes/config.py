@@ -30,7 +30,7 @@ DEFAULT_PROJECT_CONFIG = {
 DEFAULT_CONFIG = {
     "version": 1,
     "server_port": DEFAULT_PORT,
-    "server_host": "0.0.0.0",
+    "server_host": "127.0.0.1",
     "system": {
         "storage": {
             "persistent_file_path": "storage_data"
@@ -44,8 +44,9 @@ DEFAULT_CONFIG = {
         "security": {
             "project_discoverable": True
         },
-        "debuging": {
-            "verbose_mode": False
+        "debugging": {
+            "verbose_mode": False,
+            "flask_debug_mode": False
         }
     },
     "projects": [

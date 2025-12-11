@@ -69,7 +69,7 @@
 ### Example request
 
 ```bash
-curl -H "Authorization: Bearer <SYSTEM_API_KEY>" http://0.0.0.0:23849/status
+curl -H "Authorization: Bearer <SYSTEM_API_KEY>" http://127.0.0.1:23849/status
 ```
 
 ### Example successful response (200)
@@ -118,7 +118,7 @@ curl -H "Authorization: Bearer <SYSTEM_API_KEY>" http://0.0.0.0:23849/status
 ### Example request
 
 ```bash
-curl -H "X-API-Key: <SYSTEM_API_KEY>" http://0.0.0.0:23849/api/v1/projects
+curl -H "X-API-Key: <SYSTEM_API_KEY>" http://127.0.0.1:23849/api/v1/projects
 ```
 
 ### Example successful response (200) — abridged
@@ -174,7 +174,7 @@ curl -H "X-API-Key: <SYSTEM_API_KEY>" http://0.0.0.0:23849/api/v1/projects
 ### Example request
 
 ```bash
-curl -X POST http://0.0.0.0:23849/api/v1/projects \
+curl -X POST http://127.0.0.1:23849/api/v1/projects \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <SYSTEM_API_KEY>" \
   -d '{"id":"New_project3"}'
@@ -233,7 +233,7 @@ curl -X POST http://0.0.0.0:23849/api/v1/projects \
 
 ```bash
 curl -X POST -H "Authorization: Bearer <SYSTEM_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/New_project2/config/regenerate-api-key
+  http://127.0.0.1:23849/api/v1/projects/New_project2/config/regenerate-api-key
 ```
 
 ### Example successful response (200)
@@ -269,7 +269,7 @@ curl -X POST -H "Authorization: Bearer <SYSTEM_API_KEY>" \
 
 ```bash
 curl -X DELETE -H "X-API-Key: <SYSTEM_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/New_project3
+  http://127.0.0.1:23849/api/v1/projects/New_project3
 ```
 
 ### Example successful response (200)
@@ -305,7 +305,7 @@ curl -X DELETE -H "X-API-Key: <SYSTEM_API_KEY>" \
 
 ```bash
 curl -H "Authorization: Bearer <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project
+  http://127.0.0.1:23849/api/v1/projects/first_project
 ```
 
 ### Example successful response (200)
@@ -348,7 +348,7 @@ curl -H "Authorization: Bearer <PROJECT_API_KEY>" \
 ### Example request
 
 ```bash
-curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project \
+curl -X PUT http://127.0.0.1:23849/api/v1/projects/first_project \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <PROJECT_API_KEY>" \
   -d '{"storage": {"on_disk": true}}'
@@ -409,7 +409,7 @@ curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project \
 
 ```bash
 curl -H "X-API-Key: <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project/store
+  http://127.0.0.1:23849/api/v1/projects/first_project/store
 ```
 
 ### Example successful response (200) — abridged
@@ -451,7 +451,7 @@ curl -H "X-API-Key: <PROJECT_API_KEY>" \
 ### Example request (JSON value)
 
 ```bash
-curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key6 \
+curl -X PUT http://127.0.0.1:23849/api/v1/projects/first_project/store/example_key6 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <PROJECT_API_KEY>" \
   -d '{"example":{"data":"Hellow world!","wow":"Wow! signal NASA"},"super_cool":true}'
@@ -460,7 +460,7 @@ curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key
 ### Example request (plain-text value)
 
 ```bash
-curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key3 \
+curl -X PUT http://127.0.0.1:23849/api/v1/projects/first_project/store/example_key3 \
   -H "Authorization: Bearer <PROJECT_API_KEY>" \
   --data "test"
 ```
@@ -499,7 +499,7 @@ curl -X PUT http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key
 
 ```bash
 curl -H "Api-Key: <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key6
+  http://127.0.0.1:23849/api/v1/projects/first_project/store/example_key6
 ```
 
 ### Example successful response (200)
@@ -538,7 +538,7 @@ curl -H "Api-Key: <PROJECT_API_KEY>" \
 
 ```bash
 curl -H "Api-Key: <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key6/value
+  http://127.0.0.1:23849/api/v1/projects/first_project/store/example_key6/value
 ```
 
 ### Example successful response (raw JSON)
@@ -571,7 +571,7 @@ curl -H "Api-Key: <PROJECT_API_KEY>" \
 
 ```bash
 curl -X DELETE -H "X-API-Key: <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project/store/example_key3
+  http://127.0.0.1:23849/api/v1/projects/first_project/store/example_key3
 ```
 
 ### Example successful response (200)
@@ -602,7 +602,7 @@ curl -X DELETE -H "X-API-Key: <PROJECT_API_KEY>" \
 
 ```bash
 curl -X DELETE -H "Authorization: Bearer <PROJECT_API_KEY>" \
-  http://0.0.0.0:23849/api/v1/projects/first_project/store
+  http://127.0.0.1:23849/api/v1/projects/first_project/store
 ```
 
 ### Example successful response (200)
@@ -636,7 +636,7 @@ Use this to seed a running instance for testing. Remove plaintext API keys in pr
 {
   "version": 1,
   "server_port": 23849,
-  "server_host": "0.0.0.0",
+  "server_host": "127.0.0.1",
   "system": {
     "storage": { "persistent_file_path": "storage_data" },
     "authentication": {
@@ -675,7 +675,7 @@ import requests
 project = 'first_project'
 key = 'example_key6'
 api = '1EmoHoumfnJ62-OaYCPxmpoHEv4t9fjWOlJURnZu-Kw'
-url = f'http://0.0.0.0:23849/api/v1/projects/{project}/store/{key}/value'
+url = f'http://127.0.0.1:23849/api/v1/projects/{project}/store/{key}/value'
 
 resp = requests.get(url, headers={'Authorization': f'Bearer {api}'}, timeout=5)
 if resp.status_code == 200:

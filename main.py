@@ -2,8 +2,7 @@
 
 from pathlib import Path
 import json
-
-from classes.cui import cui
+import traceback
 from classes.config import Config
 from utils.auth_utils import generate_api_key, hash_api_key, verify_api_key
 from classes.server import Server
@@ -11,18 +10,14 @@ from classes.project import Project
 from classes.system_info import system_info
 from classes.cui import cui
 
-if __name__ == "__main__":
-    print("Simple PyKV - Version 0.0.0 (Beta) - Program starting...")
-    # cui.print.start_message()
-
-    # Try catch
-    print("Attempting to initialise configuration...")
+def initialise_config():
     try:
         config_instance = Config()
     except Exception as e:
         print(f"ERROR: Failed to initialise configuration: {e}")
-        exit(1)
-    
+        # Re-raise so a production runner sees the failure on import
+        raise
+
     cui_instance = cui(config_instance)
 
     # Check to see if system authentication is enabled
@@ -113,6 +108,9 @@ if __name__ == "__main__":
         else:
             cui_instance.print(f"Project '{project_id}' authentication is disabled. No API key or hash will be used. (This is not secure!)", type="WARNING")
 
+    return config_instance, cui_instance
+
+def initialise_projects(config_instance, cui_instance):
     # Create list to hold project instances
     project_instances = []
 
@@ -126,7 +124,18 @@ if __name__ == "__main__":
         except Exception as e:
             cui_instance.print(f"Failed to initialise project '{project_cfg.get('id', 'unknown_project')}': {e}", "ERROR")
             exit(1)
-    
+
+    return project_instances
+
+def initialize_server():
+    print("Simple PyKV - Version 0.0.0 (Beta) - Program starting...")
+
+    # Initialise configuration and CUI
+    config_instance, cui_instance = initialise_config()
+
+    # Initialise projects
+    project_instances = initialise_projects(config_instance, cui_instance)
+
     # Initialise system info module
     cui_instance.print("Initialising system information module...", "INFO")
     system_info_instance = system_info(config_instance)
@@ -137,11 +146,29 @@ if __name__ == "__main__":
     cui_instance.print("Starting server...", "INFO")
     try:
         server_app_instance = Server.create_app(config_instance, project_instances, system_info_instance)
-        server_port = config_instance.config_data.get("server_port")
-        server_host = config_instance.config_data.get("server_host")
-        flask_debug_mode = config_instance.config_data.get("system", {}).get("debuging", {}).get("flask_debug_mode", False)
-        cui_instance.print(f"Verbose: Starting server on {server_host}:{server_port}...")
-        # Run the server
-        server_app_instance.run(host=server_host, port=server_port, threaded=True, debug=flask_debug_mode, use_reloader=False)
+        return server_app_instance, config_instance, cui_instance
     except Exception as e:
         cui_instance.print(f"Failed to start server: {e}", "ERROR")
+        return None, config_instance, cui_instance
+
+# Expose `app` so WSGI servers can import `main:app`
+try:
+    app, _CONFIG, cui_instance = initialize_server()
+except Exception:
+    # If initialisation fails during import, print a traceback and re-raise so a process manager sees it.
+    traceback.print_exc()
+    raise
+
+if __name__ == "__main__":
+    # Development run — ALWAYS run with debug=False here to avoid the Werkzeug debugger in production.
+    server_host = _CONFIG.config_data.get("server_host") or "127.0.0.1"
+    server_port = _CONFIG.config_data.get("server_port") or 23849
+    debug_mode = _CONFIG.config_data.get("system", {}).get("debugging", {}).get("flask_debug_mode", False)
+
+    cui_instance.print(f"You are running Simple PyKV in development mode. This is NOT recommended for production use.", "WARNING")
+    cui_instance.print(f"For production, please use a WSGI server like Gunicorn or uWSGI to serve the application.", "WARNING")
+    cui_instance.print(f"Using development mode can expose severe security risks, potentially allowing remote code execution and data breaches. Please review the documentation for safe deployment practices.", "WARNING")
+    cui_instance.print(f"Starting server on {server_host}:{server_port} (development mode)", "INFO")
+
+    # NOTE: debug MUST be False for safety. Use a WSGI server in production instead of this.
+    app.run(host=server_host, port=server_port, threaded=True, debug=debug_mode, use_reloader=False)
