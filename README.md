@@ -89,6 +89,37 @@ If authentication is enabled, API keys will be generated and shown in the consol
 
 > **Important:** Running the server without proper configuration, security settings, and API key management will expose your server to potential security risks. Please read the [Configuration](#configuration), [Running the server](#running-the-server) and [Ensuring security](#ensuring-security) sections carefully before deploying the server publicly.
 
+### Run using docker (optional)
+
+You can also run Simple PyKV using Docker. Make sure you have Docker installed and running.
+
+1. **Clone the repo**
+    ```bash
+    git clone https://github.com/majdiJ/simple-pykv.git
+    ```
+
+2. **Change to project directory**
+    ```bash
+    cd simple-pykv
+    ```
+
+3. **Build the Docker image**
+    ```bash
+    docker build -t simple-pykv:latest .
+    ```
+
+4. **Run with a host bind mount (easy to inspect on host)**
+    ```bash
+    mkdir -p ./pykv_data
+    ```
+
+    ```bash
+    docker run -d --name simple-pykv \
+    -p 23849:23849 \
+    -v "$(pwd)/pykv_data:/data" \
+    simple-pykv:latest
+    ```
+
 ---
 
 ## Configuration
