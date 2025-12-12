@@ -30,6 +30,8 @@ Designed for simplicity and predictable behaviour, perfect for small-to-medium p
 ## Table of contents
 
 1. [Quickstart](#quickstart)
+    - [Run using Python](#run-using-python)
+    - [Run using docker (optional)](#run-using-docker-optional)
 2. [Configuration](#configuration)
 3. [Running the server](#running-the-server)
 4. [Terminal logging / CUI](#terminal-logging--cui)
@@ -38,8 +40,9 @@ Designed for simplicity and predictable behaviour, perfect for small-to-medium p
 7. [Examples](#examples)
 8. [Client tips](#client-tips)
 9. [Troubleshooting](#troubleshooting)
-10. [Contributing](#contributing)
-11. [License](#license)
+10. [Privacy, security, and transparency](#privacy-security-and-transparency)
+11. [Contributing](#contributing)
+12. [License](#license)
 
 ## Additional documentation
 1. [Routes](routes.md) - Detailed API reference
@@ -48,6 +51,14 @@ Designed for simplicity and predictable behaviour, perfect for small-to-medium p
 ---
 
 ## Quickstart
+
+You can run Simple PyKV either directly using Python or using Docker. We recommend using a WSGI server like Gunicorn or Waitress for production use to ensure better performance and security.
+
+> **Important:** Running the server without proper configuration, security settings, and API key management will expose your server to potential security risks. Please read the [Configuration](#configuration), [Running the server](#running-the-server) and [Ensuring security](#ensuring-security) sections carefully before deploying the server publicly.
+
+Depending on if you want to run using Python or Docker, follow the respective instructions below. Editing the configuration file is diffrent for each method, so please read the [Configuration](#configuration) section after setup.
+
+### Run using Python
 
 Requirements: Python 3.8+.
 
@@ -84,10 +95,7 @@ Requirements: Python 3.8+.
 The server will start using the default configuration.
 
 On first server run, if `config.json` is missing, a default config file will be created in the current directory (`simple-pykv`) along with a storage folder for on-disk projects.
-
-If authentication is enabled, API keys will be generated and shown in the console. If `save_api_key_to_config` is `true`, the plaintext API keys will also be saved in `config.json`. Otherwise, they will only be shown in the console once,  **store them safely!** (Read the [Configuration](#configuration) section for details and information about API key management.)
-
-> **Important:** Running the server without proper configuration, security settings, and API key management will expose your server to potential security risks. Please read the [Configuration](#configuration), [Running the server](#running-the-server) and [Ensuring security](#ensuring-security) sections carefully before deploying the server publicly.
+(Read the [Configuration](#configuration) section for details and information about API key management.)
 
 ### Run using docker (optional)
 
@@ -120,11 +128,28 @@ You can also run Simple PyKV using Docker. Make sure you have Docker installed a
     simple-pykv:latest
     ```
 
+    After the first container start you will find ./pykv_data/config.json and ./pykv_data/storage_data/ (the app creates them on first run). The app generates API keys and save_api_key_to_config is false, the plaintext keys will be printed to container logs once — check them with docker logs.
+
+4. **Using docker-compose (recommended)**
+    ```bash
+    # bring up in background
+    docker-compose up -d --build
+    # view logs
+    docker-compose logs -f
+    ```
 ---
 
 ## Configuration
 
-The server is configured by a single JSON file (`config.json`). Below is a **sanitised** example.
+The server is configured by a single JSON file (`config.json`). 
+
+>*`config.json` if running using Python directly, or `pykv_data/config.json` if running using Docker with the above bind mount.*
+
+On first server run, if `config.json` or `pykv_data/config.json` is missing, a default config file will be created in the current directory (`simple-pykv`) along with a storage folder for on-disk projects.
+
+If authentication is enabled, API keys will be generated and shown in the console. If `save_api_key_to_config` is `true`, the plaintext API keys will also be saved in `config.json`. Otherwise, they will only be shown in the console once,  **store them safely!**
+
+Below is a **sanitised** example.
 
 ```json
 {
@@ -168,48 +193,53 @@ The server is configured by a single JSON file (`config.json`). Below is a **san
 **DO NOT COMMIT REAL API KEYS TO PUBLIC REPOSITORIES!**
 
 ### Config options
+<details>
+<summary>Click to expand to view configuration options</summary>
 
-Here are the main configuration options:
+  Here are the main configuration options:
 
-* `version` - What version of the config schema is being used (currently `1`).
+  * `version` - What version of the config schema is being used (currently `1`).
 
-* `server_port` - Port number to bind the HTTP server to (default `23849`).
+  * `server_port` - Port number to bind the HTTP server to (default `23849`).
 
-* `server_host` - Host/IP to bind the HTTP server to (default `127.0.0.1`).
+  * `server_host` - Host/IP to bind the HTTP server to (default `127.0.0.1`).
 
-* `system.storage.persistent_file_path` - Directory path for on-disk project storage files. Recommended to keep as `storage_data`.
+  * `system.storage.persistent_file_path` - Directory path for on-disk project storage files. Recommended to keep as `storage_data`.
 
-* `system.authentication.enabled` - Whether a system/global API key is required for administrative routes (create/delete projects, list projects, etc). Recommended to keep as `true`.
+  * `system.authentication.enabled` - Whether a system/global API key is required for administrative routes (create/delete projects, list projects, etc). Recommended to keep as `true`.
 
-* `system.authentication.save_api_key_to_config` - Whether to save the raw system API key in plaintext in `config.json`. By default, this is `false` for security. If `false`, the generated API key will be shown once in the console on first run and never shown again  (**store it safely!**). If `true`, the API key will be saved in `config.json` under `system.authentication.api_key`.
+  * `system.authentication.save_api_key_to_config` - Whether to save the raw system API key in plaintext in `config.json`. By default, this is `false` for security. If `false`, the generated API key will be shown once in the console on first run and never shown again  (**store it safely!**). If `true`, the API key will be saved in `config.json` under `system.authentication.api_key`.
 
-* `system.authentication.api_key` - The system/global API key in plaintext (if `save_api_key_to_config` is `true`), otherwise `null`. You can set to your own API key, but not recommended for security. Instead, let the server generate a secure random key on first run.
+  * `system.authentication.api_key` - The system/global API key in plaintext (if `save_api_key_to_config` is `true`), otherwise `null`. You can set to your own API key, but not recommended for security. Instead, let the server generate a secure random key on first run.
 
-* `system.authentication.api_key_hash` - The hashed system/global API key (if `authentication.enabled` is `true`), otherwise `null`. Used for verifying incoming API keys.
+  * `system.authentication.api_key_hash` - The hashed system/global API key (if `authentication.enabled` is `true`), otherwise `null`. Used for verifying incoming API keys.
 
-* `system.security.project_discoverable` - Whether `GET /api/v1/projects` can list all projects that exist. If `false`, that endpoint returns `403 Forbidden`. Useful for hiding project existence.
+  * `system.security.project_discoverable` - Whether `GET /api/v1/projects` can list all projects that exist. If `false`, that endpoint returns `403 Forbidden`. Useful for hiding project existence.
 
-* `projects` - An array of project configurations. Each project has:
-    * `id` - Unique project identifier string (Must be alphanumeric with underscores or hyphens, and unique id).
+  * `projects` - An array of project configurations. Each project has:
+      * `id` - Unique project identifier string (Must be alphanumeric with underscores or hyphens, and unique id).
 
-    * `storage.on_disk` - Whether this project's key/value store is persisted to disk (`true`) or kept in memory only (`false`) (All projects will be kept in memory while the server is running).
-    
-    * `authentication.enabled` - Whether this project requires an API key for access. Recommended to keep as `true` for security.
-    
-    * `authentication.save_api_key_to_config` - Whether to save the raw project API key in plaintext in `config.json`. By default, this is `false` for security. If `false`, the generated API key will be shown once in the console on first run and never shown again (**store it safely!**). If `true`, the API key will be saved in `config.json` under the project's `authentication.api_key`.
+      * `storage.on_disk` - Whether this project's key/value store is persisted to disk (`true`) or kept in memory only (`false`) (All projects will be kept in memory while the server is running).
+      
+      * `authentication.enabled` - Whether this project requires an API key for access. Recommended to keep as `true` for security.
+      
+      * `authentication.save_api_key_to_config` - Whether to save the raw project API key in plaintext in `config.json`. By default, this is `false` for security. If `false`, the generated API key will be shown once in the console on first run and never shown again (**store it safely!**). If `true`, the API key will be saved in `config.json` under the project's `authentication.api_key`.
 
-    * `authentication.api_key` - The project API key in plaintext (if `save_api_key_to_config` is `true`), otherwise `null`. You can set to your own API key, but not recommended for security. Instead, let the server generate a secure random key on first run.
+      * `authentication.api_key` - The project API key in plaintext (if `save_api_key_to_config` is `true`), otherwise `null`. You can set to your own API key, but not recommended for security. Instead, let the server generate a secure random key on first run.
 
-    * `authentication.api_key_hash` - The hashed project API key (if `authentication.enabled` is `true`), otherwise `null`. Used for verifying incoming API keys.
-    
-    * `security.keys_and_values_discoverable` - Whether `GET /api/v1/projects/<project_id>/store` can list all keys in this project's store. If `false`, that endpoint returns `403 Forbidden`. Useful for hiding key existence.
+      * `authentication.api_key_hash` - The hashed project API key (if `authentication.enabled` is `true`), otherwise `null`. Used for verifying incoming API keys.
+      
+      * `security.keys_and_values_discoverable` - Whether `GET /api/v1/projects/<project_id>/store` can list all keys in this project's store. If `false`, that endpoint returns `403 Forbidden`. Useful for hiding key existence.
+
+</details>
 
 
-Important config notes:
+### Important config notes
 
 * `system.authentication.enabled` and `projects[].authentication.enabled` control whether API keys are required for system-level and project-level routes respectively. If disabled, no API key is needed for those routes. Recommended to keep authentication enabled for both for security, unless you wish to have an unsecured server/project.
 * `save_api_key_to_config` options control whether plaintext API keys are saved in `config.json`. For security, it is recommended to keep these as `false` so that keys are not stored on disk.
 * API keys are always hashed and stored in `api_key_hash` fields for verification, regardless of `save_api_key_to_config` settings.
+* To update the config, stop the server, edit `config.json` or `pykv_data/config.json`, then restart the server.
 
 ---
 
@@ -380,13 +410,30 @@ If `save_api_key_to_config` is `false` for project a plaintext API key may be re
 
 ---
 
-## Troubleshooting / common pitfalls
+## Troubleshooting
 
 * **401 Unauthorised**: check you are using the correct API key (system vs project) and header form.
 * **403 Forbidden** on `GET /api/v1/projects`: check `system.security.project_discoverable`.
 * **PUT /api/v1/projects/<id>** rejects `id` and `authentication` fields - update other fields only.
 * **GET .../store/<key>/value** returns raw content (no envelope); handle JSON/text accordingly.
 * For `500` errors consult server logs for internal messages.
+
+---
+
+## Privacy, security, and transparency
+
+Privacy and security are fundamental rights. Simple PyKV is designed with security best practices in mind, but it is your responsibility to ensure proper configuration and deployment.
+
+Simple PyKV does not collect, store, or transmit any personal data by default, and all data is stored locally on your machine. However, you must ensure that your deployment is secure, especially if exposing the server to the internet.
+
+You are responsible for managing API keys, securing network access, and ensuring data privacy. Always follow best practices for server deployment.
+
+Please concider the following:
+* **Secure configurations** - Enable authentication, use strong API keys, and limit the data saved to ur machine.
+* **Reverse proxies and HTTPS** - Use reverse proxies with SSL/TLS to encrypt traffic.
+* **Tunneling and VPNs** - Consider using VPNs or secure tunnels for remote access.
+* **Do not store sensitive data** - Avoid storing highly sensitive data unless you have strong security measures in place.
+* **Regular audits** - Regularly review server logs, configurations, updates for potential security issues.
 
 ---
 
