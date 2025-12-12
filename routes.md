@@ -81,7 +81,7 @@ curl -H "Authorization: Bearer <SYSTEM_API_KEY>" http://127.0.0.1:23849/status
     "number_of_projects": 3,
     "storage_usage_bytes": 858,
     "uptime": 38,
-    "version": "0.0.0 (Beta)"
+    "version": "1.0.0"
   },
   "data": null,
   "message": "Simple PyKV server is fully operational.",
@@ -125,7 +125,7 @@ curl -H "X-API-Key: <SYSTEM_API_KEY>" http://127.0.0.1:23849/api/v1/projects
 
 ```json
 {
-  "System": { "memory_usage_bytes": 43057152, "number_of_projects": 3, "version": "0.0.0 (Beta)" },
+  "System": { "memory_usage_bytes": 43057152, "number_of_projects": 3, "version": "1.0.0" },
   "data": {
     "New_project": {
       "authentication": { "enabled": true, "save_api_key_to_config": false },

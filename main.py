@@ -1,10 +1,28 @@
-# Simple PyKV - A Lightweight Key-Value Store Server in Python
+"""
+Simple PyKV - A Lightweight Key-Value Store Server in Python
+Version 1.0.0
+GitHub: https://github.com/majdij/simple-pykv
+Majdi Jaigirdar - Dec 2025 - Licensed under Apache-2.0
+https://www.majdij.com/projects/simple-pykv
+
+-----------------------------------------------------
+
+“Sometimes it is the people no one can imagine anything of who do the things no one can imagine.”
+― Alan Turing
+
+“The isolated man does not develop any intellectual power. It is necessary for him to be immersed
+in an environment of other men, whose techniques he absorbs during the first twenty years of his 
+life. He may then perhaps do a little research of his own and make a very few discoveries which
+are passed on to other men. From this point of view the search for new techniques must be regarded 
+as carried out by the human community as a whole, rather than by individuals.”
+― Alan Turing
+"""
 
 from pathlib import Path
 import json
 import traceback
 from classes.config import Config
-from utils.auth_utils import generate_api_key, hash_api_key, verify_api_key
+from utils.auth_utils import generate_api_key, hash_api_key
 from classes.server import Server
 from classes.project import Project
 from classes.system_info import system_info
@@ -128,7 +146,11 @@ def initialise_projects(config_instance, cui_instance):
     return project_instances
 
 def initialize_server():
-    print("Simple PyKV - Version 0.0.0 (Beta) - Program starting...")
+    print("Simple PyKV - Version 1.0.0 - Program starting...")
+    print("GitHub: https://github.com/majdij/simple-pykv")
+    print("Majdi Jaigirdar - Dec 2025 - Licensed under Apache-2.0")
+    print("https://www.majdij.com/projects/simple-pykv")
+    print("-----------------------------------------------------")
 
     # Initialise configuration and CUI
     config_instance, cui_instance = initialise_config()

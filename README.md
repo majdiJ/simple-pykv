@@ -7,9 +7,12 @@ Simple, lightweight Python-based key-value storage server that exposes a small R
 Designed for simplicity and predictable behaviour, perfect for small-to-medium projects, personal projects, internal tools, demos, or anywhere you need a tiny secure persistent or in-memory key/value store without a heavy database.
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![Python](https://img.shields.io/badge/python-3.13%2B-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-lightgrey)
 ![GitHub stars](https://img.shields.io/github/stars/majdiJ/simple-pykv?style=social)
+
+> This project was developed and tested with Python 3.13.3.
+It may work on earlier versions, but they are not officially supported.
 
 ## Features
 
@@ -143,7 +146,7 @@ You can also run Simple PyKV using Docker. Make sure you have Docker installed a
 
 The server is configured by a single JSON file (`config.json`). 
 
->*`config.json` if running using Python directly, or `pykv_data/config.json` if running using Docker with the above bind mount.*
+>*To edit configuration file, edit: `config.json` if running using Python directly, or `pykv_data/config.json` if running using Docker with the above bind mount.*
 
 On first server run, if `config.json` or `pykv_data/config.json` is missing, a default config file will be created in the current directory (`simple-pykv`) along with a storage folder for on-disk projects.
 

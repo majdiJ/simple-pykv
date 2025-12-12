@@ -120,7 +120,7 @@ class system_info:
 
     def __init__(self, config_instance: Config):
         # system information module
-        self.simple_pykv_version = "0.0.0 (Beta)"
+        self.simple_pykv_version = "1.0.0"
         self.start_time = time.time()
         self.config_instance = config_instance
     
